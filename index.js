@@ -8,7 +8,7 @@ const router = require('./routes')
 
 const app = express()
 const allowedOrigins = [
-    'https://crm-based-cms-frontend.vercel.app', // आपका फ्रंटएंड डोमेन 
+    'https://crm-based-cms-frontend.vercel.app/login', // आपका फ्रंटएंड डोमेन 
     process.env.FORNTEND_URL, // आपके .env से
     'http://localhost:3000' // लोकल डेवलपमेंट के लिए
   ];
@@ -35,7 +35,7 @@ app.use(cookieParser())
 
 app.use("/api",router)
 
-const PORT = 8080 || process.env.PORT
+const PORT = process.env.PORT || 8080;
 
 
 connectDB().then(()=>{
