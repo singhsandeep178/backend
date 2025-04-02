@@ -44,8 +44,8 @@ const loginController = async (req, res) => {
      // Set token as HTTP-only cookie
      res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // डेवलपमेंट में false, प्रोडक्शन में true
-  sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      secure: true, // HTTPS पर डिप्लॉय होने के कारण true होना चाहिए
+      sameSite: 'None', 
       maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year in milliseconds
     });
 
