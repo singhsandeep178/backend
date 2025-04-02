@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 
 const authToken = async (req, res, next) => {
   // Get token from header
-  const token = req.cookies.token;
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
 
   console.log("Cookies received:", req.cookies);
 console.log("Token from cookies:", req.cookies.token);

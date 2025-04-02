@@ -35,11 +35,7 @@ const loginController = async (req, res) => {
     }
     
     // Create token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.TOKEN_SECRET_KEY,
-      { expiresIn: '365d' }
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET_KEY, { expiresIn: '365d' });
     
      // Set token as HTTP-only cookie
      res.cookie('token', token, {
@@ -57,7 +53,8 @@ const loginController = async (req, res) => {
       message: 'Login successful',
       error: false,
       success: true,
-      data: userData
+      data: userData,
+      token: token 
     });
   } catch (err) {
     console.error('Error in login:', err);
