@@ -6,8 +6,8 @@ const getAllCustomers = async (req, res) => {
       const branchFilter = {};
       if (req.query.branch) {
         branchFilter.branch = req.query.branch;
-      } else if (req.user.role !== 'admin') {
-        branchFilter.branch = req.user.branch;
+      } else if (req.userRole !== 'admin') {
+        branchFilter.branch = req.userBranch;
       }
       
       const customers = await Customer.find(branchFilter)

@@ -1,52 +1,67 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
-const authToken = async (req, res, next) => {
-  // Get token from header
-  const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
-
-  console.log("Cookies received:", req.cookies);
-console.log("Token from cookies:", req.cookies.token);
-
-  // Check if no token
-  if (!token) {
-    return res.status(401).json({
-      message: 'Not authenticated, authorization denied',
-      error: true,
-      success: false
-    });
-  }
-
+const authMiddleware = async (req, res, next) => {
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+    // Get token from cookies or authorization header
+    let token = req.cookies.token;
     
-    // Add user ID from token
-    req.userId = decoded.userId;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
     
-    // Fetch user to get role
-    const user = await User.findById(decoded.userId);
-    if (!user) {
+    if (!token) {
       return res.status(401).json({
-        message: 'Invalid user',
+        message: 'Not authenticated. Please log in.',
         error: true,
         success: false
       });
     }
     
-    // Add user role and branch for access control
+    // Verify token
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+    
+    // Find user
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(401).json({
+        message: 'User not found',
+        error: true,
+        success: false
+      });
+    }
+    
+    // Check if user is active
+    if (user.status !== 'active') {
+      return res.status(401).json({
+        message: 'Your account is inactive',
+        error: true,
+        success: false
+      });
+    }
+    
+    // Set user info on request
+    req.userId = user._id;
     req.userRole = user.role;
-    req.userBranch = user.branch;
+
     req.user = user;
+    
+    // Important: Add user's branch to the request
+    // This will be used to restrict manager actions to their own branch
+    if (user.branch) {
+      req.userBranch = user.branch;
+    }
     
     next();
   } catch (err) {
+    console.error('Auth middleware error:', err);
     return res.status(401).json({
-      message: 'Token is not valid',
+      message: 'Authentication failed',
       error: true,
       success: false
     });
   }
 };
 
-module.exports = authToken;
+module.exports = authMiddleware;

@@ -29,10 +29,20 @@ const stockAdd = require('../controllers/inventory/stockAdd');
 const updateInventory = require('../controllers/inventory/updateInventory');
 const deleteInventory = require('../controllers/inventory/deleteInventory');
 const checkSerialNumber = require('../controllers/inventory/checkSerialNumber');
+const getBranchTechniciansController = require('../controllers/manager/getBranchTechniciansController');
+const managerAddTechnicianController = require('../controllers/manager/managerAddTechnicianController');
+const getUserController = require('../controllers/user/getUserController');
+const updateUserController = require('../controllers/user/updateUserController');
+const deleteUserController = require('../controllers/user/deleteUserController');
 
 
 // Login 
 router.post("/login", loginController);
+
+// User
+router.get("/get-user/:id", authToken, getUserController);
+router.post("/update-user/:id", authToken, updateUserController);
+router.delete("/delete-user/:id", authToken, deleteUserController);
 
 // Admin
 router.get("/get-admins", authToken, getAdminUsersController);
@@ -44,6 +54,10 @@ router.post("/add-technicians", authToken, addTechnicianController);
 router.get("/get-branches", authToken, getBranchesController);
 router.post("/add-branches", authToken, addBranchController);
 router.post("/user-status", authToken, updateUserStatusController);
+
+// Manager
+router.get("/manager-get-technician", authToken, getBranchTechniciansController);
+router.post("/manager-add-technician", authToken, managerAddTechnicianController);
 
 // Lead
 router.get("/search", authToken, search);

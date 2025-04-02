@@ -14,7 +14,7 @@ const getAllLeads = async (req, res) => {
       const branchFilter = {};
       if (req.query.branch) {
         branchFilter.branch = req.query.branch;
-      } else if (req.user.role !== 'admin') {
+      } else if (req.userRole !== 'admin') {
         // Non-admin users can only see leads from their branch
         branchFilter.branch = req.userBranch; 
       }
