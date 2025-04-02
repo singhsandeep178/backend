@@ -8,7 +8,7 @@ const router = require('./routes')
 
 const app = express()
 const allowedOrigins = [
-    'https://crm-based-cms-frontend.vercel.app', // आपका फ्रंटएंड डोमेन 
+    'https://cms.3gdigital.net', 
     process.env.FORNTEND_URL, // आपके .env से
     'http://localhost:3000' // लोकल डेवलपमेंट के लिए
   ];
