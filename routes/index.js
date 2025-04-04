@@ -34,6 +34,13 @@ const managerAddTechnicianController = require('../controllers/manager/managerAd
 const getUserController = require('../controllers/user/getUserController');
 const updateUserController = require('../controllers/user/updateUserController');
 const deleteUserController = require('../controllers/user/deleteUserController');
+const getInventoryByType = require('../controllers/inventory/getInventoryByType');
+const getNewBranchManagersController = require('../controllers/manager/getNewBranchManagersController');
+const checkManagerStatusController = require('../controllers/manager/checkManagerStatusController');
+const initiateTransferController = require('../controllers/manager/initiateTransferController');
+const acceptTransferController = require('../controllers/manager/acceptTransferController');
+const rejectTransferController = require('../controllers/manager/rejectTransferController');
+const getRejectedTransfersController = require('../controllers/manager/getRejectedTransfersController');
 
 
 // Login 
@@ -58,6 +65,13 @@ router.post("/user-status", authToken, updateUserStatusController);
 // Manager
 router.get("/manager-get-technician", authToken, getBranchTechniciansController);
 router.post("/manager-add-technician", authToken, managerAddTechnicianController);
+router.get("/new-managers", authToken, getNewBranchManagersController);
+router.get("/manager-status", authToken, checkManagerStatusController);
+router.post("/initiate-transfer", authToken, initiateTransferController);
+router.post("/accept-transfer/:transferId", authToken, acceptTransferController);
+router.post("/reject-transfer/:transferId", authToken, rejectTransferController);
+router.get("/get-rejected-transfers", authToken, getRejectedTransfersController);
+
 
 // Lead
 router.get("/search", authToken, search);
@@ -82,5 +96,6 @@ router.post("/add-stock", authToken, stockAdd);
 router.post("/update-inventory/:id", authToken, updateInventory);
 router.post("/delete-inventory/:id", authToken, deleteInventory);
 router.get("/check-serial/:serialNumber", authToken, checkSerialNumber);
+router.get("/inventory-by-type/:type", authToken, getInventoryByType);
 
 module.exports = router;

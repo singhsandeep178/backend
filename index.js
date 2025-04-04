@@ -5,7 +5,6 @@ require('dotenv').config()
 const connectDB = require('./config/db')
 const router = require('./routes')
 
-
 const app = express()
 const allowedOrigins = [
     'https://cms.3gdigital.net', 
@@ -26,7 +25,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
-app.use("/api",router)
+app.use("/api", router)
 
 const PORT = process.env.PORT || 8080;
 
