@@ -41,6 +41,9 @@ const initiateTransferController = require('../controllers/manager/initiateTrans
 const acceptTransferController = require('../controllers/manager/acceptTransferController');
 const rejectTransferController = require('../controllers/manager/rejectTransferController');
 const getRejectedTransfersController = require('../controllers/manager/getRejectedTransfersController');
+const getAllWorkOrders = require('../controllers/customer/getAllWorkOrders');
+const createWorkOrder = require('../controllers/customer/createWorkOrder');
+const assignTechnician = require('../controllers/customer/assignTechnician');
 
 
 // Login 
@@ -87,6 +90,9 @@ router.get("/get-all-customers", authToken, getAllCustomers);
 router.post("/create-customer", authToken, createCustomer);
 router.get("/get-single-customer/:id", authToken, getCustomer);
 router.post("/update-customer/:id", authToken, updateCustomer);
+router.get("/get-work-orders", authToken, getAllWorkOrders);
+router.post("/create-work-orders", authToken, createWorkOrder);
+router.post("/assign-technician", authToken, assignTechnician);
 
 // Inventory
 router.get("/get-all-inventory", authToken, getAllInventory);
