@@ -23,6 +23,21 @@ const customerSchema = new mongoose.Schema({
   age: {
     type: Number
   },
+  projectType: {
+    type: String,
+    enum: [
+      'CCTV Camera',
+      'Attendance System',
+      'Safe and Locks',
+      'Home/Office Automation',
+      'IT & Networking Services',
+      'Software & Website Development',
+      'Custom'
+    ]
+  },
+  initialRemark: {
+    type: String
+  },
   branch: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Branch'

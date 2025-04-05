@@ -19,6 +19,9 @@ const authMiddleware = async (req, res, next) => {
    
     // Verify token
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET_KEY);
+
+    console.log('Secret key exists:', !!process.env.TOKEN_SECRET_KEY);
+// Don't log the actual secret in production, just check if it exists
    
     // Find user
     const user = await User.findById(decoded.userId);
