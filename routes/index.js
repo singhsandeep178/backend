@@ -44,6 +44,10 @@ const getRejectedTransfersController = require('../controllers/manager/getReject
 const getAllWorkOrders = require('../controllers/customer/getAllWorkOrders');
 const createWorkOrder = require('../controllers/customer/createWorkOrder');
 const assignTechnician = require('../controllers/customer/assignTechnician');
+const assignInventoryToTechnician = require('../controllers/inventory/assignInventoryToTechnician');
+const getTechnicianInventory = require('../controllers/technician/getTechnicianInventory');
+const getTechnicianWorkOrders = require('../controllers/technician/getTechnicianWorkOrders');
+const updateWorkOrderStatus = require('../controllers/technician/updateWorkOrderStatus');
 
 
 // Login 
@@ -75,6 +79,9 @@ router.post("/accept-transfer/:transferId", authToken, acceptTransferController)
 router.post("/reject-transfer/:transferId", authToken, rejectTransferController);
 router.get("/get-rejected-transfers", authToken, getRejectedTransfersController);
 
+// Technician
+router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);
+router.post("/update-work-status", authToken, updateWorkOrderStatus);
 
 // Lead
 router.get("/search", authToken, search);
@@ -103,5 +110,8 @@ router.post("/update-inventory/:id", authToken, updateInventory);
 router.post("/delete-inventory/:id", authToken, deleteInventory);
 router.get("/check-serial/:serialNumber", authToken, checkSerialNumber);
 router.get("/inventory-by-type/:type", authToken, getInventoryByType);
+router.post("/assign-inventory-technician", authToken, assignInventoryToTechnician);
+router.get("/get-technician-inventory", authToken, getTechnicianInventory);
+
 
 module.exports = router;
