@@ -37,8 +37,32 @@ const assignInventoryToTechnician = async (req, res) => {
       });
     }
     
-    // For serialized products, check if serial number exists and belongs to manager's branch
+    // Find or create technician inventory record
+    let techInventory = await TechnicianInventory.findOne({
+      technician: technicianId,
+      item: item._id
+    });
+    
+    if (!techInventory) {
+      techInventory = new TechnicianInventory({
+        technician: technicianId,
+        item: item._id,
+        branch: req.userBranch,
+        serializedItems: [],
+        genericQuantity: 0
+      });
+    }
+    
+    // Handle the assignment based on the item type
     if (type === 'serialized-product') {
+      if (!serialNumber) {
+        return res.status(400).json({
+          success: false,
+          message: 'Serial number is required for serialized products'
+        });
+      }
+      
+      // Check if the serial number exists in manager's branch
       const stockItem = item.stock.find(
         s => s.serialNumber === serialNumber && s.branch.toString() === req.userBranch.toString()
       );
@@ -50,47 +74,49 @@ const assignInventoryToTechnician = async (req, res) => {
         });
       }
       
-      // Remove serial number from main inventory
-      // Remove serial number from main inventory (only from manager's branch)
-  item.stock = item.stock.filter(s => !(s.serialNumber === serialNumber && s.branch.toString() === req.user.branch.toString()));
-  await item.save();
-      
-      // Add to technician's inventory
-      let techInventory = await TechnicianInventory.findOne({
-        technician: technicianId,
-        item: item._id
+      // Check if this serial number is already assigned to any technician
+      const alreadyAssigned = await TechnicianInventory.findOne({
+        'serializedItems.serialNumber': serialNumber
       });
       
-      if (!techInventory) {
-        techInventory = new TechnicianInventory({
-          technician: technicianId,
-          item: item._id,
-          branch: req.userBranch,
-          serializedItems: [],
-          genericQuantity: 0
+      if (alreadyAssigned) {
+        return res.status(400).json({
+          success: false,
+          message: 'This serial number is already assigned to a technician'
         });
       }
       
+      // Remove from main inventory and add to technician inventory
+      item.stock = item.stock.filter(s => !(s.serialNumber === serialNumber && s.branch.toString() === req.userBranch.toString()));
+      await item.save();
+      
+      // Add to technician's serialized items
       techInventory.serializedItems.push({
         serialNumber,
         assignedAt: new Date(),
         assignedBy: req.userId
       });
+    } else {
+      // For generic products
+      if (!quantity || quantity <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid quantity required for generic products'
+        });
+      }
       
-      await techInventory.save();
-    } else if (type === 'generic-product') {
-      // For generic products, check if sufficient quantity exists
-      const totalStock = item.stock.reduce((total, stockItem) => {
+      // Calculate total available stock in manager's branch
+      const availableStock = item.stock.reduce((total, stockItem) => {
         if (stockItem.branch.toString() === req.userBranch.toString()) {
           return total + stockItem.quantity;
         }
         return total;
       }, 0);
       
-      if (totalStock < quantity) {
+      if (availableStock < quantity) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient stock. Only ${totalStock} ${item.unit}(s) available.`
+          message: `Insufficient stock. Only ${availableStock} ${item.unit}(s) available.`
         });
       }
       
@@ -117,28 +143,15 @@ const assignInventoryToTechnician = async (req, res) => {
       item.stock = item.stock.filter(s => s.quantity > 0);
       await item.save();
       
-      // Add to technician's inventory
-      let techInventory = await TechnicianInventory.findOne({
-        technician: technicianId,
-        item: item._id
-      });
-      
-      if (!techInventory) {
-        techInventory = new TechnicianInventory({
-          technician: technicianId,
-          item: item._id,
-          branch: req.userBranch,
-          serializedItems: [],
-          genericQuantity: 0
-        });
-      }
-      
+      // Update technician's generic quantity
       techInventory.genericQuantity += quantity;
-      techInventory.lastUpdated = new Date();
-      techInventory.lastUpdatedBy = req.userId;
-      
-      await techInventory.save();
     }
+    
+    // Update last modified info
+    techInventory.lastUpdated = new Date();
+    techInventory.lastUpdatedBy = req.userId;
+    
+    await techInventory.save();
     
     res.json({
       success: true,
