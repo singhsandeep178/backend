@@ -48,6 +48,9 @@ const assignInventoryToTechnician = require('../controllers/inventory/assignInve
 const getTechnicianInventory = require('../controllers/technician/getTechnicianInventory');
 const getTechnicianWorkOrders = require('../controllers/technician/getTechnicianWorkOrders');
 const updateWorkOrderStatus = require('../controllers/technician/updateWorkOrderStatus');
+const startProject = require('../controllers/technician/startProject');
+const updateProjectStatus = require('../controllers/technician/updateProjectStatus');
+const completeProject = require('../controllers/technician/completeProject');
 
 
 // Login 
@@ -82,6 +85,9 @@ router.get("/get-rejected-transfers", authToken, getRejectedTransfersController)
 // Technician
 router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);
 router.post("/update-work-status", authToken, updateWorkOrderStatus);
+router.post("/start-project", authToken, startProject);
+router.post("/update-project-status", authToken, updateProjectStatus);
+router.post("/complete-project", authToken, completeProject);
 
 // Lead
 router.get("/search", authToken, search);
