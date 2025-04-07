@@ -17,8 +17,28 @@ const workOrderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'assigned', 'in-progress', 'completed'],
+    enum: ['pending', 'assigned', 'in-progress', 'paused', 'completed'],
     default: 'pending'
+  },
+  statusHistory: [{
+    status: {
+      type: String,
+      required: true
+    },
+    remark: {
+      type: String
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  activeTimestamp: {
+    type: Date
   },
   instructions: {
     type: String
