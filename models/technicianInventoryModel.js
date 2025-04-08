@@ -32,7 +32,7 @@ const technicianInventorySchema = new mongoose.Schema({
     },
     status: {
       type: String,
-      enum: ['active', 'returned', 'lost'],
+      enum: ['active', 'returned', 'lost', 'used'],
       default: 'active'
     }
   }],

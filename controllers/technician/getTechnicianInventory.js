@@ -26,6 +26,7 @@ const getTechnicianInventory = async (req, res) => {
         itemName: item.name,
         type: item.type,
         unit: item.unit,
+        salePrice: item.salePrice,
         serializedItems: inventory.serializedItems,
         genericQuantity: inventory.genericQuantity,
         lastUpdated: inventory.updatedAt || inventory.createdAt

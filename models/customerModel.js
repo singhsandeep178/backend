@@ -40,6 +40,10 @@ const workOrderSchema = new mongoose.Schema({
   activeTimestamp: {
     type: Date
   },
+  bills: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bill'
+  }],
   instructions: {
     type: String
   },

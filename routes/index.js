@@ -52,6 +52,7 @@ const startProject = require('../controllers/technician/startProject');
 const updateProjectStatus = require('../controllers/technician/updateProjectStatus');
 const completeProject = require('../controllers/technician/completeProject');
 const getTechnicianActiveProject = require('../controllers/technician/getTechnicianActiveProject');
+const createWorkOrderBill = require('../controllers/technician/createWorkOrderBill');
 
 
 // Login 
@@ -90,6 +91,7 @@ router.post("/start-project", authToken, startProject);
 router.post("/update-project-status", authToken, updateProjectStatus);
 router.post("/complete-project", authToken, completeProject);
 router.get("/technician-active-projects", authToken, getTechnicianActiveProject);
+router.post("/create-bill", authToken, createWorkOrderBill);
 
 // Lead
 router.get("/search", authToken, search);
