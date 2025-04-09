@@ -60,12 +60,36 @@ const createWorkOrderBill = async (req, res) => {
     
     // Process each item in the bill
     for (const billItem of items) {
-      // Find the item in technician's inventory
-      const inventoryItem = technicianInventory.find(inv => 
-        inv.item.id === billItem.itemId
-      );
+      // Find the item in technician's inventory - handle both _id and id properly
+      const inventoryItem = technicianInventory.find(inv => {
+        // Check by ID if possible
+        if (inv.item._id) {
+          const matchesWithItemId = inv.item._id.toString() === billItem.itemId;
+          if (matchesWithItemId) return true;
+        }
+        if (inv.item.id) {
+          const matchesWithId = inv.item.id.toString() === billItem.itemId;
+          if (matchesWithId) return true;
+        }
+        
+        // If ID doesn't match, try matching by name
+        // This is necessary because your system uses two different ID formats
+        if (inv.item.name && billItem.name) {
+          return inv.item.name.toLowerCase() === billItem.name.toLowerCase();
+        } else if (inv.item.itemName && billItem.name) {
+          return inv.item.itemName.toLowerCase() === billItem.name.toLowerCase();
+        }
+        
+        return false;
+      });
       
       if (!inventoryItem) {
+        console.log("All available inventory items:", technicianInventory.map(inv => ({
+          id: inv.item._id || inv.item.id,
+          name: inv.item.name || inv.item.itemName,
+          itemId: inv.item.itemId
+        })));
+        
         return res.status(400).json({
           success: false,
           message: `Item ${billItem.itemId} not found in your inventory`
@@ -153,34 +177,15 @@ const createWorkOrderBill = async (req, res) => {
       technician: req.user._id,
       items: billItems,
       totalAmount,
-      createdAt: new Date()
+      createdAt: new Date(),
+      // Store itemsToUpdate for use in confirmWorkOrderBill
+      itemsToUpdate: itemsToUpdate
     });
     
     await newBill.save();
     
-    // Update technician's inventory
-    for (const updateItem of itemsToUpdate) {
-      const inventory = await TechnicianInventory.findById(updateItem.inventoryId);
-      
-      if (updateItem.type === 'serialized') {
-        // Update serial item status to 'used'
-        const serialIndex = inventory.serializedItems.findIndex(
-          serial => serial.serialNumber === updateItem.serialNumber
-        );
-        
-        if (serialIndex >= 0) {
-          inventory.serializedItems[serialIndex].status = 'used';
-        }
-      } else {
-        // Reduce generic quantity
-        inventory.genericQuantity -= updateItem.quantity;
-      }
-      
-      inventory.lastUpdated = new Date();
-      inventory.lastUpdatedBy = req.user._id;
-      
-      await inventory.save();
-    }
+    // Important: DO NOT update inventory here. We'll update it only when payment is confirmed
+    // to avoid double reduction of inventory items.
     
     // Add bill reference to work order
     if (!workOrder.bills) {

@@ -1,4 +1,3 @@
-// controllers/technician/confirmWorkOrderBill.js
 const Customer = require('../../models/customerModel');
 const TechnicianInventory = require('../../models/technicianInventoryModel');
 const BillModel = require('../../models/billModel');
@@ -12,19 +11,19 @@ const confirmWorkOrderBill = async (req, res) => {
         message: 'Access denied. Only technicians can confirm bills.'
       });
     }
-    
+   
     const { billId, paymentMethod, transactionId = null } = req.body;
-    
+   
     // Find the bill
     const bill = await BillModel.findById(billId);
-    
+   
     if (!bill) {
       return res.status(404).json({
         success: false,
         message: 'Bill not found'
       });
     }
-    
+   
     // Check if technician is the one who created the bill
     if (bill.technician.toString() !== req.user._id.toString()) {
       return res.status(403).json({
@@ -32,92 +31,138 @@ const confirmWorkOrderBill = async (req, res) => {
         message: 'You are not authorized to confirm this bill'
       });
     }
-    
+   
     // Update the bill with payment details
     bill.paymentMethod = paymentMethod;
     bill.paymentStatus = 'paid';
     bill.transactionId = transactionId;
     bill.paidAt = new Date();
-    
+   
     await bill.save();
+   
+    // Now update technician's inventory
+    // This is the ONLY place where inventory should be updated to prevent double reduction
     
-    // Update technician's inventory by marking items as used
-    for (const item of bill.items) {
-      const inventory = await TechnicianInventory.findOne({
-        technician: req.user._id,
-        item: item.itemId
-      });
-      
-      if (inventory) {
-        if (item.type === 'serialized-product' && item.serialNumber) {
-          // For serialized items, mark as used
-          const serialIndex = inventory.serializedItems.findIndex(
-            serial => serial.serialNumber === item.serialNumber
-          );
-          
-          if (serialIndex >= 0) {
-            inventory.serializedItems[serialIndex].status = 'used';
+    // If we have itemsToUpdate stored in the bill from createWorkOrderBill
+    if (bill.itemsToUpdate && bill.itemsToUpdate.length > 0) {
+      for (const updateItem of bill.itemsToUpdate) {
+        const inventory = await TechnicianInventory.findById(updateItem.inventoryId);
+        
+        if (inventory) {
+          if (updateItem.type === 'serialized') {
+            // Update serial item status to 'used'
+            const serialIndex = inventory.serializedItems.findIndex(
+              serial => serial.serialNumber === updateItem.serialNumber
+            );
+            
+            if (serialIndex >= 0) {
+              inventory.serializedItems[serialIndex].status = 'used';
+            }
+          } else {
+            // Reduce generic quantity by the specified amount
+            inventory.genericQuantity -= updateItem.quantity;
           }
-        } else if (item.type === 'generic-product') {
-          // For generic items, reduce quantity
-          inventory.genericQuantity -= item.quantity;
+          
+          inventory.lastUpdated = new Date();
+          inventory.lastUpdatedBy = req.user._id;
+          
+          await inventory.save();
+        }
+      }
+    } else {
+      // Fallback to using the bill items directly if itemsToUpdate is not available
+      for (const item of bill.items) {
+        const inventory = await TechnicianInventory.findOne({
+          technician: req.user._id,
+          item: item.itemId
+        });
+        
+        if (inventory) {
+          if (item.type === 'serialized-product' && item.serialNumber) {
+            // For serialized items, mark as used
+            const serialIndex = inventory.serializedItems.findIndex(
+              serial => serial.serialNumber === item.serialNumber
+            );
+            
+            if (serialIndex >= 0) {
+              inventory.serializedItems[serialIndex].status = 'used';
+            }
+          } else if (item.type === 'generic-product') {
+            // For generic items, reduce quantity by the amount in the bill
+            inventory.genericQuantity -= item.quantity;
+          }
+          
+          inventory.lastUpdated = new Date();
+          inventory.lastUpdatedBy = req.user._id;
+          
+          await inventory.save();
+        }
+      }
+    }
+   
+    // Find the customer and work order
+    const customer = await Customer.findById(bill.customer);
+    if (customer) {
+      // workOrder को सही तरीके से find करें
+      const workOrder = customer.workOrders.find(order => order.orderId === bill.orderId);
+      
+      if (workOrder) {
+        // Add the billing info to work order
+        if (!workOrder.billingInfo) {
+          workOrder.billingInfo = [];
         }
         
-        inventory.lastUpdated = new Date();
-        inventory.lastUpdatedBy = req.user._id;
+        workOrder.billingInfo.push({
+          billId: bill._id,
+          billNumber: bill.billNumber,
+          amount: bill.totalAmount,
+          paymentMethod,
+          transactionId,
+          paidAt: new Date()
+        });
         
-        await inventory.save();
+        // Add to status history too
+        if (!workOrder.statusHistory) {
+          workOrder.statusHistory = [];
+        }
+        
+        workOrder.statusHistory.push({
+          status: 'payment',
+          remark: `Payment of ₹${bill.totalAmount.toFixed(2)} received via ${paymentMethod}`,
+          updatedAt: new Date(),
+          updatedBy: req.user._id
+        });
+        
+        await customer.save();
+        
+        // After saving customer, get the updated customer and workOrder to ensure we have the latest data
+        const updatedCustomer = await Customer.findById(customer._id);
+        const updatedWorkOrder = updatedCustomer.workOrders.find(order => order.orderId === bill.orderId);
+        
+        res.status(200).json({
+          success: true,
+          message: 'Payment processed successfully',
+          data: {
+            billNumber: bill.billNumber,
+            paymentMethod,
+            amount: bill.totalAmount,
+            workOrder: updatedWorkOrder // Include complete updated workOrder in response
+          }
+        });
+        return; // Function को यहीं terminate करें
       }
     }
     
-    // Find the customer and work order
-    const customer = await Customer.findById(bill.customer);
-if (customer) {
-  // workOrder को सही तरीके से find करें
-  const workOrder = customer.workOrders.find(order => order.orderId === bill.orderId);
-  
-  if (workOrder) {
-    // Add the billing info to work order
-    if (!workOrder.billingInfo) {
-      workOrder.billingInfo = [];
-    }
-    
-    workOrder.billingInfo.push({
-      billId: bill._id,
-      billNumber: bill.billNumber,
-      amount: bill.totalAmount,
-      paymentMethod,
-      transactionId,
-      paidAt: new Date()
-    });
-
-    // Add to status history too
-  if (!workOrder.statusHistory) {
-    workOrder.statusHistory = [];
-  }
-  
-  workOrder.statusHistory.push({
-    status: 'payment',
-    remark: `Payment of ₹${bill.totalAmount.toFixed(2)} received via ${paymentMethod}`,
-    updatedAt: new Date(),
-    updatedBy: req.user._id
-  });
-    
-    await customer.save();
-    
+    // If we couldn't find the customer or work order, still return success for the payment
     res.status(200).json({
       success: true,
-      message: 'Payment processed successfully',
+      message: 'Payment processed successfully, but could not update work order details',
       data: {
         billNumber: bill.billNumber,
         paymentMethod,
-        amount: bill.totalAmount,
-        workOrder: workOrder.toObject ? workOrder.toObject() : workOrder // Include workOrder in response
+        amount: bill.totalAmount
       }
     });
-    return; // Function को यहीं terminate करें
-  }
-}
   } catch (err) {
     console.error('Error confirming bill:', err);
     res.status(500).json({
