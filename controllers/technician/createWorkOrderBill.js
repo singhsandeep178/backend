@@ -196,6 +196,7 @@ const createWorkOrderBill = async (req, res) => {
       success: true,
       message: 'Bill created successfully',
       data: {
+        billId: newBill._id,
         billNumber,
         items: billItems,
         totalAmount,

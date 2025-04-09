@@ -1,6 +1,7 @@
 const Item = require('../../models/inventoryModel');
 const TechnicianInventory = require('../../models/technicianInventoryModel');
 const User = require('../../models/userModel');
+const TransferHistory = require('../../models/transferHistoryModel');
 
 const assignInventoryToTechnician = async (req, res) => {
   try {
@@ -152,6 +153,18 @@ const assignInventoryToTechnician = async (req, res) => {
     techInventory.lastUpdatedBy = req.userId;
     
     await techInventory.save();
+
+    // Create transfer history record
+    await new TransferHistory({
+      fromType: 'branch',
+      fromId: req.userBranch,
+      toType: 'technician',
+      toId: technicianId,
+      item: item._id,
+      serialNumber: type === 'serialized-product' ? serialNumber : undefined,
+      quantity: type === 'serialized-product' ? 1 : quantity,
+      transferredBy: req.userId
+    }).save();
     
     res.json({
       success: true,

@@ -48,11 +48,13 @@ const assignInventoryToTechnician = require('../controllers/inventory/assignInve
 const getTechnicianInventory = require('../controllers/technician/getTechnicianInventory');
 const getTechnicianWorkOrders = require('../controllers/technician/getTechnicianWorkOrders');
 const updateWorkOrderStatus = require('../controllers/technician/updateWorkOrderStatus');
-const startProject = require('../controllers/technician/startProject');
-const updateProjectStatus = require('../controllers/technician/updateProjectStatus');
-const completeProject = require('../controllers/technician/completeProject');
 const getTechnicianActiveProject = require('../controllers/technician/getTechnicianActiveProject');
 const createWorkOrderBill = require('../controllers/technician/createWorkOrderBill');
+const confirmWorkOrderBill = require('../controllers/technician/confirmWorkOrderBill');
+const completeWorkOrder = require('../controllers/technician/completeWorkOrder');
+const getWorkOrderDetails = require('../controllers/technician/getWorkOrderDetails');
+const getTransferHistory = require('../controllers/manager/getTransferHistory');
+const returnInventoryToManager = require('../controllers/technician/returnInventoryToManager');
 
 
 // Login 
@@ -83,15 +85,17 @@ router.post("/initiate-transfer", authToken, initiateTransferController);
 router.post("/accept-transfer/:transferId", authToken, acceptTransferController);
 router.post("/reject-transfer/:transferId", authToken, rejectTransferController);
 router.get("/get-rejected-transfers", authToken, getRejectedTransfersController);
+router.get("/get-transfer-history", authToken, getTransferHistory);
 
 // Technician
 router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);
 router.post("/update-work-status", authToken, updateWorkOrderStatus);
-router.post("/start-project", authToken, startProject);
-router.post("/update-project-status", authToken, updateProjectStatus);
-router.post("/complete-project", authToken, completeProject);
 router.get("/technician-active-projects", authToken, getTechnicianActiveProject);
 router.post("/create-bill", authToken, createWorkOrderBill);
+router.post("/confirm-order-bill", authToken, confirmWorkOrderBill);
+router.post("/complete-work-order", authToken, completeWorkOrder);
+router.get("/get-work-order-details/:customerId/:orderId", authToken, getWorkOrderDetails);
+router.post("/return-inventory", authToken, returnInventoryToManager);
 
 // Lead
 router.get("/search", authToken, search);
