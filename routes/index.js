@@ -55,6 +55,8 @@ const completeWorkOrder = require('../controllers/technician/completeWorkOrder')
 const getWorkOrderDetails = require('../controllers/technician/getWorkOrderDetails');
 const getTransferHistory = require('../controllers/manager/getTransferHistory');
 const returnInventoryToManager = require('../controllers/technician/returnInventoryToManager');
+const getManagerProjects = require('../controllers/manager/getManagerProjects');
+const approveWorkOrder = require('../controllers/manager/approveWorkOrder');
 
 
 // Login 
@@ -86,6 +88,8 @@ router.post("/accept-transfer/:transferId", authToken, acceptTransferController)
 router.post("/reject-transfer/:transferId", authToken, rejectTransferController);
 router.get("/get-rejected-transfers", authToken, getRejectedTransfersController);
 router.get("/get-transfer-history", authToken, getTransferHistory);
+router.get("/get-manager-projects", authToken, getManagerProjects);
+router.post("/approve-order", authToken, approveWorkOrder);
 
 // Technician
 router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);

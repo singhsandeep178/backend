@@ -17,13 +17,13 @@ const workOrderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'assigned', 'in-progress', 'paused', 'completed'],
+    enum: ['pending', 'assigned', 'in-progress', 'paused', 'pending-approval', 'completed'],
     default: 'pending'
   },
   statusHistory: [{
     status: {
       type: String,
-      enum: ['assigned', 'in-progress', 'paused', 'completed', 'payment'],
+      enum: ['assigned', 'in-progress', 'paused', 'pending-approval', 'completed', 'payment', 'approval'],
       required: true
     },
     remark: {
