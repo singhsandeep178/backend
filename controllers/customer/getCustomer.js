@@ -15,7 +15,8 @@ const getCustomer = async (req, res) => {
       }
       
       // Check if user has access to this customer
-      if (req.user.role !== 'admin' && customer.branch.toString() !== req.user.branch.toString()) {
+      if (req.user.role !== 'admin' && req.user.role !== 'manager' &&
+        customer.branch.toString() !== req.user.branch.toString()) {
         return res.status(403).json({
           success: false,
           message: 'Not authorized to access this customer'
