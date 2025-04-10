@@ -57,6 +57,7 @@ const getTransferHistory = require('../controllers/manager/getTransferHistory');
 const returnInventoryToManager = require('../controllers/technician/returnInventoryToManager');
 const getManagerProjects = require('../controllers/manager/getManagerProjects');
 const approveWorkOrder = require('../controllers/manager/approveWorkOrder');
+const getBillDetails = require('../controllers/manager/getBillDetails');
 
 
 // Login 
@@ -90,6 +91,7 @@ router.get("/get-rejected-transfers", authToken, getRejectedTransfersController)
 router.get("/get-transfer-history", authToken, getTransferHistory);
 router.get("/get-manager-projects", authToken, getManagerProjects);
 router.post("/approve-order", authToken, approveWorkOrder);
+router.get("/get-bill-details/:id", authToken, getBillDetails);
 
 // Technician
 router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);

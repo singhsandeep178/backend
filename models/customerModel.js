@@ -45,6 +45,19 @@ const workOrderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bill'
   }],
+  
+  // नया billingInfo फील्ड
+  billingInfo: [{
+    billId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Bill'
+    },
+    billNumber: String,
+    amount: Number,
+    paymentMethod: String,
+    transactionId: String,
+    paidAt: Date
+  }],
   instructions: {
     type: String
   },

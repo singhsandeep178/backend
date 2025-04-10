@@ -37,6 +37,13 @@ const getManagerProjects = async (req, res) => {
           path: 'workOrders.statusHistory.updatedBy',
           select: 'firstName lastName'
         })
+        .populate({
+          path: 'workOrders.bills',
+          model: 'Bill',
+          populate: {
+            path: 'items', // बिल आइटम्स को भी पॉपुलेट करें
+          }
+        })
         .lean();
       
       // Extract and format work orders
@@ -87,7 +94,7 @@ const getManagerProjects = async (req, res) => {
               assignedAt: order.assignedAt,
               initialRemark: order.initialRemark,
               statusHistory: order.statusHistory,
-              billingInfo: order.bills,
+              billingInfo: order.bills || [],
               createdAt: order.createdAt,
               updatedAt: order.updatedAt,
               completedAt: completedAt,
