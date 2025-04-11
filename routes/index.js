@@ -58,6 +58,7 @@ const returnInventoryToManager = require('../controllers/technician/returnInvent
 const getManagerProjects = require('../controllers/manager/getManagerProjects');
 const approveWorkOrder = require('../controllers/manager/approveWorkOrder');
 const getBillDetails = require('../controllers/manager/getBillDetails');
+const getTechnicianProjects = require('../controllers/technician/getTechnicianProjects');
 
 
 // Login 
@@ -102,6 +103,7 @@ router.post("/confirm-order-bill", authToken, confirmWorkOrderBill);
 router.post("/complete-work-order", authToken, completeWorkOrder);
 router.get("/get-work-order-details/:customerId/:orderId", authToken, getWorkOrderDetails);
 router.post("/return-inventory", authToken, returnInventoryToManager);
+router.get("/get-technician-projects/:technicianId", authToken, getTechnicianProjects);
 
 // Lead
 router.get("/search", authToken, search);
