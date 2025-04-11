@@ -27,14 +27,17 @@ const getManagerProjects = async (req, res) => {
       const customers = await Customer.find(branchFilter)
         .populate({
           path: 'workOrders.technician',
+          model: 'User',
           select: 'firstName lastName'
         })
         .populate({
           path: 'workOrders.assignedBy',
+          model: 'User',
           select: 'firstName lastName'
         })
         .populate({
           path: 'workOrders.statusHistory.updatedBy',
+          model: 'User', 
           select: 'firstName lastName'
         })
         .populate({
@@ -90,10 +93,13 @@ const getManagerProjects = async (req, res) => {
               projectType: order.projectType,
               status: order.status,
               technician: order.technician,
-              assignedBy: order.assignedBy,
+              assignedBy: order.assignedBy && typeof order.assignedBy === 'object' ? order.assignedBy : { _id: order.assignedBy },
               assignedAt: order.assignedAt,
               initialRemark: order.initialRemark,
-              statusHistory: order.statusHistory,
+              statusHistory: order.statusHistory ? order.statusHistory.map(entry => ({
+                ...entry,
+                updatedBy: entry.updatedBy && typeof entry.updatedBy === 'object' ? entry.updatedBy : { _id: entry.updatedBy }
+              })) : [],
               billingInfo: order.bills || [],
               createdAt: order.createdAt,
               updatedAt: order.updatedAt,
