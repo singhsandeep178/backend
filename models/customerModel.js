@@ -124,6 +124,11 @@ const customerSchema = new mongoose.Schema({
       ],
       required: true
     },
+    projectCategory: {
+      type: String,
+      enum: ['New Installation', 'Repair'],
+      default: 'New Installation'
+    },
     initialRemark: {
       type: String
     },

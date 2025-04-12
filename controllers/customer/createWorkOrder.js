@@ -1,10 +1,10 @@
 const Customer = require('../../models/customerModel');
-const generateOrderId = require('../../helpers/generateOrderId'); // We'll create this utility
+const generateOrderId = require('../../helpers/generateOrderId');
 
 // Create a new work order for a customer
 const createWorkOrder = async (req, res) => {
   try {
-    const { customerId, projectType, initialRemark } = req.body;
+    const { customerId, projectType, projectCategory, initialRemark } = req.body;
     
     // Find the customer
     const customer = await Customer.findById(customerId);
@@ -27,10 +27,14 @@ const createWorkOrder = async (req, res) => {
     const projectId = `PRJ-${Date.now().toString().slice(-6)}`;
     const orderId = await generateOrderId(); // Custom function to generate unique order IDs
     
+    // Default project category to "New Installation" if not provided
+    const finalProjectCategory = projectCategory || 'New Installation';
+    
     // Add project to customer's projects array
     const newProject = {
       projectId,
       projectType,
+      projectCategory: finalProjectCategory,
       initialRemark,
       createdAt: new Date()
     };
@@ -42,6 +46,7 @@ const createWorkOrder = async (req, res) => {
       orderId,
       projectId,
       projectType,
+      projectCategory: finalProjectCategory,
       status: 'pending',
       createdAt: new Date()
     };
