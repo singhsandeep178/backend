@@ -15,6 +15,12 @@ const workOrderSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Add this field if it's missing
+  projectCategory: {
+    type: String,
+    enum: ['New Installation', 'Repair'],
+    default: 'New Installation'
+  },
   status: {
     type: String,
     enum: ['pending', 'assigned', 'in-progress', 'paused', 'pending-approval', 'completed'],
@@ -127,7 +133,6 @@ const customerSchema = new mongoose.Schema({
     projectCategory: {
       type: String,
       enum: ['New Installation', 'Repair'],
-      default: 'New Installation'
     },
     initialRemark: {
       type: String

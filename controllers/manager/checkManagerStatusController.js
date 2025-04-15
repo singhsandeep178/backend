@@ -8,7 +8,7 @@ const checkManagerStatusController = async (req, res) => {
     // Check if user is a manager
     const user = await User.findById(userId);
     
-    console.log('Checking manager status for user:', user);
+    // console.log('Checking manager status for user:', user);
     
     if (!user || user.role !== 'manager') {
       return res.status(403).json({
@@ -21,7 +21,7 @@ const checkManagerStatusController = async (req, res) => {
     // Get active manager status
     const activeManagerStatus = user.activeManagerStatus || 'active';
     
-    console.log('Active manager status:', activeManagerStatus);
+    // console.log('Active manager status:', activeManagerStatus);
     
     // Check if there's any pending transfer related to this manager
     const asOldManager = await OwnershipTransfer.findOne({
