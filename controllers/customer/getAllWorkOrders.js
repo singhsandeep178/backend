@@ -39,6 +39,8 @@ const getAllWorkOrders = async (req, res) => {
             const matchingProject = customer.projects.find(p => p.projectId === order.projectId);
             if (matchingProject) {
               orderObj.projectCategory = matchingProject.projectCategory || 'New Installation';
+              // यहां project creation date जोड़ें
+      orderObj.projectCreatedAt = matchingProject.createdAt;
             } else {
               // Default to 'New Installation' if no matching project is found
               orderObj.projectCategory = 'New Installation';

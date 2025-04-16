@@ -38,6 +38,7 @@ const assignTechnician = async (req, res) => {
       workOrder.instructions = instructions;
       
       await customer.save();
+      console.log("customer data", customer);
       
       res.status(200).json({
         success: true,
