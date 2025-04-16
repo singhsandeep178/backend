@@ -50,6 +50,27 @@ const getWorkOrderDetails = async (req, res) => {
       branchName: customer.branch ? customer.branch.name : null
     };
    
+     // Add project information
+     const project = customer.projects.find(p => p.projectId === workOrder.projectId);
+     if (project) {
+       workOrderWithCustomerInfo.projectCategory = project.projectCategory || 'New Installation';
+       workOrderWithCustomerInfo.initialRemark = project.initialRemark || '';
+     }
+     
+     // Find who completed the project first (if completed)
+     if (workOrder.statusHistory && workOrder.statusHistory.length > 0) {
+       const completionHistory = workOrder.statusHistory.find(history => 
+         history.status === 'completed' || history.status === 'pending-approval'
+       );
+       
+       if (completionHistory && completionHistory.updatedBy) {
+         const completedByUser = completionHistory.updatedBy;
+         if (completedByUser.firstName && completedByUser.lastName) {
+           workOrderWithCustomerInfo.completedBy = `${completedByUser.firstName} ${completedByUser.lastName}`;
+         }
+       }
+     }
+
     res.status(200).json(generateResponse(true, 'Work order details retrieved successfully', workOrderWithCustomerInfo));
   } catch (err) {
     console.error('Error fetching work order details:', err);

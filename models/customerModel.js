@@ -26,6 +26,9 @@ const workOrderSchema = new mongoose.Schema({
     enum: ['pending', 'assigned', 'in-progress', 'paused', 'pending-approval', 'completed'],
     default: 'pending'
   },
+  initialRemark: {  // Add this field
+    type: String
+  },
   statusHistory: [{
     status: {
       type: String,

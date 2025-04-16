@@ -51,6 +51,7 @@ const getTechnicianWorkOrders = async (req, res) => {
    
     // Sort by creation date (newest first)
     workOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    console.log("technician workorers:", workOrders);
    
     res.status(200).json({
       success: true,

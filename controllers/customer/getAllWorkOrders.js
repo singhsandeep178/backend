@@ -30,7 +30,8 @@ const getAllWorkOrders = async (req, res) => {
             customerPhone: customer.phoneNumber,
             customerEmail: customer.email,
             branchName: customer.branch ? customer.branch.name : null,
-            customerId: customer._id
+            customerId: customer._id,
+            initialRemark: order.initialRemark
           };
           
           // If projectCategory is missing, try to find it from the matching project
