@@ -51,6 +51,7 @@ const createCustomer = async (req, res) => {
         projectId,
         projectType,
         status: 'pending',
+        initialRemark,
         createdAt: new Date()
       }],
       createdBy: req.user.id,
