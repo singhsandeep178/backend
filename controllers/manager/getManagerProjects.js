@@ -96,6 +96,7 @@ const getManagerProjects = async (req, res) => {
               assignedBy: order.assignedBy && typeof order.assignedBy === 'object' ? order.assignedBy : { _id: order.assignedBy },
               assignedAt: order.assignedAt,
               initialRemark: order.initialRemark,
+              projectCategory: order.projectCategory,
               statusHistory: order.statusHistory ? order.statusHistory.map(entry => ({
                 ...entry,
                 updatedBy: entry.updatedBy && typeof entry.updatedBy === 'object' ? entry.updatedBy : { _id: entry.updatedBy }
