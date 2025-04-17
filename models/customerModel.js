@@ -36,7 +36,7 @@ const workOrderSchema = new mongoose.Schema({
       required: true
     },
     remark: {
-      type: String
+      type: String,
     },
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
