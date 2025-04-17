@@ -41,8 +41,8 @@ const getTechnicianWorkOrders = async (req, res) => {
           customerEmail: customer.email,
           customerAddress: customer.address,
           branchName: customer.branch ? customer.branch.name : null,
+          // initialRemark: project ? project.initialRemark : '',  
           projectCategory: project?.projectCategory || order.projectCategory || 'New Installation',// Added project category
-          initialRemark: project ? project.initialRemark : '',  // Added initial remark
           projectCreatedAt: project ? project.createdAt : null,
           assignedByName: order.assignedBy ? 
             `${order.assignedBy.firstName} ${order.assignedBy.lastName}` : 'Admin'  // Added assignedBy name
