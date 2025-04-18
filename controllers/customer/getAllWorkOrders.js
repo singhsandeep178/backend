@@ -1,4 +1,6 @@
 const Customer = require('../../models/customerModel');
+const User = require('../../models/userModel'); // Add this import
+
 const getAllWorkOrders = async (req, res) => {
     try {
       // Filter options
@@ -18,11 +20,14 @@ const getAllWorkOrders = async (req, res) => {
       const customers = await Customer.find(filter)
         .populate('branch', 'name')
         .populate('workOrders.technician', 'firstName lastName')
-        .populate('workOrders.assignedBy', 'firstName lastName');
+        .populate('workOrders.assignedBy', 'firstName lastName')
+        .populate('projects.completedBy', 'firstName lastName phone'); // Add this populate
      
       // Extract all work orders with customer info
-      const workOrders = customers.flatMap(customer => {
-        return customer.workOrders.map(order => {
+      const workOrders = [];
+      
+      for (const customer of customers) {
+        for (const order of customer.workOrders) {
           // Create the basic order object with all fields
           const orderObj = {
             ...order.toObject(),
@@ -34,22 +39,32 @@ const getAllWorkOrders = async (req, res) => {
             initialRemark: order.initialRemark
           };
           
-          // If projectCategory is missing, try to find it from the matching project
-          if (!orderObj.projectCategory && order.projectId) {
-            const matchingProject = customer.projects.find(p => p.projectId === order.projectId);
-            if (matchingProject) {
-              orderObj.projectCategory = matchingProject.projectCategory || 'New Installation';
-              // यहां project creation date जोड़ें
-      orderObj.projectCreatedAt = matchingProject.createdAt;
-            } else {
-              // Default to 'New Installation' if no matching project is found
-              orderObj.projectCategory = 'New Installation';
+          // Find the matching project
+          const matchingProject = customer.projects.find(p => p.projectId === order.projectId);
+          
+          // Set project category and creation date
+          if (matchingProject) {
+            orderObj.projectCategory = matchingProject.projectCategory || order.projectCategory || 'New Installation';
+            orderObj.projectCreatedAt = matchingProject.createdAt;
+            
+            // Add original technician info for repair work orders
+            if ((orderObj.projectCategory === 'Repair' || matchingProject.projectCategory === 'Repair') && 
+                matchingProject.completedBy) {
+              
+              orderObj.originalTechnician = {
+                firstName: matchingProject.completedBy.firstName || '',
+                lastName: matchingProject.completedBy.lastName || '',
+                phoneNumber: matchingProject.completedBy.phone || ''
+              };
             }
+          } else {
+            // Default values if no matching project
+            orderObj.projectCategory = order.projectCategory || 'New Installation';
           }
           
-          return orderObj;
-        });
-      });
+          workOrders.push(orderObj);
+        }
+      }
      
       // Sort by creation date (newest first)
       workOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
