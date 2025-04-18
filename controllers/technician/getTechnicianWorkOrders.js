@@ -1,4 +1,6 @@
 const Customer = require('../../models/customerModel');
+const User = require('../../models/userModel');
+
 const getTechnicianWorkOrders = async (req, res) => {
   try {
     // Only technicians can access their work orders
@@ -14,7 +16,13 @@ const getTechnicianWorkOrders = async (req, res) => {
       'workOrders.technician': req.user._id
     })
     .populate('branch', 'name location')
-    .populate('workOrders.assignedBy', 'firstName lastName');
+    .populate('workOrders.assignedBy', 'firstName lastName')
+    // Add this new populate to get original technician info
+    .populate({
+      path: 'projects.completedBy',
+      model: 'User',
+      select: 'firstName lastName phone'
+    });
    
     // Extract and format work orders
     const workOrders = [];
@@ -32,20 +40,33 @@ const getTechnicianWorkOrders = async (req, res) => {
           p => p.projectId === order.projectId
         );
 
+        // New code: Get original technician info if this is a repair/complaint
+        let originalTechnician = null;
+// Use work order's category if project category is undefined
+if (project && (project.projectCategory === 'Repair' || order.projectCategory === 'Repair') && project.completedBy) {
+  originalTechnician = {
+    firstName: project.completedBy.firstName || '',
+    lastName: project.completedBy.lastName || '',
+    phoneNumber: project.completedBy.phone || '',
+    completedAt: project.createdAt
+  };
+}
+        
         workOrders.push({
           ...order.toObject(),
           customerId: customer._id,
           customerName: customer.name,
           customerPhone: customer.phoneNumber,
-          customerWhatsapp: customer.whatsappNumber,  // Added WhatsApp number
+          customerWhatsapp: customer.whatsappNumber,
           customerEmail: customer.email,
           customerAddress: customer.address,
           branchName: customer.branch ? customer.branch.name : null,
-          // initialRemark: project ? project.initialRemark : '',  
-          projectCategory: project?.projectCategory || order.projectCategory || 'New Installation',// Added project category
+          projectCategory: project?.projectCategory || order.projectCategory || 'New Installation',
           projectCreatedAt: project ? project.createdAt : null,
-          assignedByName: order.assignedBy ? 
-            `${order.assignedBy.firstName} ${order.assignedBy.lastName}` : 'Admin'  // Added assignedBy name
+          assignedByName: order.assignedBy ?
+            `${order.assignedBy.firstName} ${order.assignedBy.lastName}` : 'Admin',
+          // Add the original technician info to the returned data
+          originalTechnician: originalTechnician
         });
       });
     });

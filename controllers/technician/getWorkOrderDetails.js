@@ -1,5 +1,7 @@
 const Customer = require('../../models/customerModel');
+const User = require('../../models/userModel'); 
 const { generateResponse } = require('../../helpers/responseGenerator');
+
 const getWorkOrderDetails = async (req, res) => {
   try {
     const { customerId, orderId } = req.params;
@@ -50,26 +52,20 @@ const getWorkOrderDetails = async (req, res) => {
    
      // Add project information
      const project = customer.projects.find(p => p.projectId === workOrder.projectId);
-     if (project) {
-       workOrderWithCustomerInfo.projectCategory = project.projectCategory || 'New Installation';
-      //  workOrderWithCustomerInfo.initialRemark = project.initialRemark || '';
-       workOrderWithCustomerInfo.projectCreatedAt = project.createdAt;
-     }
+if (project) {
+  // Set project category from work order if missing in project
+  const category = project.projectCategory || workOrder.projectCategory || 'New Installation';
+  workOrderWithCustomerInfo.projectCategory = category;
+  workOrderWithCustomerInfo.projectCreatedAt = project.createdAt;
+  
+  // Add original technician info regardless of category for repair work orders
+  if (project.completedBy && workOrder.projectCategory === 'Repair') {
+    workOrderWithCustomerInfo.originalTechnician = await User.findById(project.completedBy)
+      .select('firstName lastName phone');
+    console.log("Added original technician to response:", workOrderWithCustomerInfo.originalTechnician);
+  }
+}
      
-     
-     // Find who completed the project first (if completed)
-     if (workOrder.statusHistory && workOrder.statusHistory.length > 0) {
-       const completionHistory = workOrder.statusHistory.find(history =>
-         history.status === 'completed' || history.status === 'pending-approval'
-       );
-       
-       if (completionHistory && completionHistory.updatedBy) {
-         const completedByUser = completionHistory.updatedBy;
-         if (completedByUser.firstName && completedByUser.lastName) {
-           workOrderWithCustomerInfo.completedBy = `${completedByUser.firstName} ${completedByUser.lastName}`;
-         }
-       }
-     }
     res.status(200).json(generateResponse(true, 'Work order details retrieved successfully', workOrderWithCustomerInfo));
   } catch (err) {
     console.error('Error fetching work order details:', err);
