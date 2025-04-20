@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const TechnicianInventory = require('../../models/technicianInventoryModel');
 const Item = require('../../models/inventoryModel');
-const TransferHistory = require('../../models/transferHistoryModel');
+const ReturnedInventory = require('../../models/returnedInventoryModel');
 
 const returnInventoryToManager = async (req, res) => {
   try {
@@ -18,23 +18,29 @@ const returnInventoryToManager = async (req, res) => {
     
     console.log("Return request received:", { type, itemId, serialNumber, quantity });
     
-    // First, find the item by its custom string ID
+    // Find the item by its custom string ID
     const item = await Item.findOne({ id: itemId });
     
     if (!item) {
-      console.log("Item not found with ID:", itemId);
-      return res.status(404).json({
-        success: false,
-        message: 'Item not found in inventory'
-      });
+      const itemById = await Item.findById(itemId);
+      if (itemById) {
+        // If found by MongoDB ID instead
+        item = itemById;
+      } else {
+        console.log("Item not found with ID:", itemId);
+        return res.status(404).json({
+          success: false,
+          message: 'Item not found in inventory'
+        });
+      }
     }
     
     console.log("Found item:", item.name, "with MongoDB _id:", item._id);
     
-    // Then find the technician's inventory using the MongoDB _id
+    // Find the technician's inventory
     const techInventory = await TechnicianInventory.findOne({
       technician: req.userId,
-      item: item._id  // Use the MongoDB _id, not the custom string id
+      item: item._id
     });
     
     if (!techInventory) {
@@ -63,30 +69,12 @@ const returnInventoryToManager = async (req, res) => {
       
       console.log("Found serialized item at index:", serialItemIndex);
       
-      // Remove from technician inventory
-      const serialItem = techInventory.serializedItems.splice(serialItemIndex, 1)[0];
+      // Update item status to "returned"
+      techInventory.serializedItems[serialItemIndex].status = 'returned';
       
-      // Add back to main inventory
-      item.stock.push({
-        serialNumber,
-        quantity: 1,
-        date: new Date(),
-        branch: req.userBranch
-      });
+      // Create or update returned inventory entry
+      await createOrUpdateReturnedInventory(req.userId, req.userBranch, item._id, serialNumber, 1, type);
       
-      // Create transfer record for history
-      await new TransferHistory({
-        fromType: 'technician',
-        fromId: req.userId,
-        toType: 'branch',
-        toId: req.userBranch,
-        item: item._id,
-        serialNumber,
-        quantity: 1,
-        transferredBy: req.userId
-      }).save();
-      
-      console.log("Created transfer history record for serialized item");
     } else {
       // For generic products
       if (!quantity || quantity <= 0 || quantity > techInventory.genericQuantity) {
@@ -101,40 +89,21 @@ const returnInventoryToManager = async (req, res) => {
       // Reduce from technician's inventory
       techInventory.genericQuantity -= quantity;
       
-      // Add back to main inventory
-      item.stock.push({
-        quantity,
-        date: new Date(),
-        branch: req.userBranch
-      });
-      
-      // Create transfer record
-      await new TransferHistory({
-        fromType: 'technician',
-        fromId: req.userId,
-        toType: 'branch',
-        toId: req.userBranch,
-        item: item._id,
-        quantity,
-        transferredBy: req.userId
-      }).save();
-      
-      console.log("Created transfer history record for generic item");
+      // Create or update returned inventory entry
+      await createOrUpdateReturnedInventory(req.userId, req.userBranch, item._id, null, quantity, type);
     }
     
     // Update last modified info
     techInventory.lastUpdated = new Date();
     techInventory.lastUpdatedBy = req.userId;
     
-    // Save changes
-    console.log("Saving item and technician inventory changes");
-    await item.save();
+    // Save changes to technician inventory
     await techInventory.save();
     
     console.log("Return successful");
     res.json({
       success: true,
-      message: 'Inventory returned successfully',
+      message: 'Inventory returned successfully. Manager approval pending.',
       data: {
         itemId,
         type,
@@ -147,6 +116,52 @@ const returnInventoryToManager = async (req, res) => {
       success: false,
       message: 'Server error. Please try again later.'
     });
+  }
+};
+
+// Helper function to create or update a returned inventory entry
+const createOrUpdateReturnedInventory = async (technicianId, branchId, itemId, serialNumber, quantity, type) => {
+  try {
+    // Look for an existing pending return from this technician
+    let returnEntry = await ReturnedInventory.findOne({
+      technician: technicianId,
+      branch: branchId,
+      status: 'pending'
+    });
+    
+    if (!returnEntry) {
+      // Create a new return entry if none exists
+      returnEntry = new ReturnedInventory({
+        technician: technicianId,
+        branch: branchId,
+        items: []
+      });
+    }
+    
+    // Check if this item is already in the return list
+    const existingItemIndex = returnEntry.items.findIndex(
+      item => item.item.toString() === itemId.toString() && 
+        (type === 'generic-product' || item.serialNumber === serialNumber)
+    );
+    
+    if (existingItemIndex >= 0 && type === 'generic-product') {
+      // For generic items, update the quantity
+      returnEntry.items[existingItemIndex].quantity += quantity;
+    } else {
+      // Add new item to return
+      returnEntry.items.push({
+        item: itemId,
+        quantity,
+        serialNumber,
+        type
+      });
+    }
+    
+    await returnEntry.save();
+    return returnEntry;
+  } catch (err) {
+    console.error('Error creating/updating returned inventory:', err);
+    throw err;
   }
 };
 
