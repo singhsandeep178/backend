@@ -22,9 +22,18 @@ const getManagerProjects = async (req, res) => {
           branchFilter['branch'] = manager.branch;
         }
       }
+
+      // Add status filter if provided
+const query = {};
+if (req.query.status) {
+  query['workOrders.status'] = req.query.status;
+}
+
+// Combine branch filter with other filters
+const finalFilter = { ...branchFilter, ...query };
       
       // Find customers with work orders
-      const customers = await Customer.find(branchFilter)
+      const customers = await Customer.find(finalFilter)
         .populate({
           path: 'workOrders.technician',
           model: 'User',

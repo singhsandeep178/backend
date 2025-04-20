@@ -13,7 +13,7 @@ const updateWorkOrderStatus = async (req, res) => {
     const { customerId, orderId, status, remark } = req.body;
     
     // Validate status value
-    if (!['assigned', 'in-progress', 'paused', 'pending-approval', 'completed'].includes(status)) {
+    if (!['assigned', 'in-progress', 'paused', 'pending-approval', 'completed', 'transferring'].includes(status)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid status value'

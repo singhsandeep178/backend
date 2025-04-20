@@ -23,7 +23,7 @@ const workOrderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'assigned', 'in-progress', 'paused', 'pending-approval', 'completed'],
+    enum: ['pending', 'assigned', 'in-progress', 'paused', 'pending-approval', 'completed', 'transferring'],
     default: 'pending'
   },
   initialRemark: {  // Add this field
@@ -32,7 +32,7 @@ const workOrderSchema = new mongoose.Schema({
   statusHistory: [{
     status: {
       type: String,
-      enum: ['assigned', 'in-progress', 'paused', 'pending-approval', 'completed', 'payment', 'approval', 'remark', 'communication'],
+      enum: ['assigned', 'in-progress', 'paused', 'pending-approval', 'completed', 'payment', 'approval', 'remark', 'communication', 'transferring', 'transferred'],
       required: true
     },
     remark: {

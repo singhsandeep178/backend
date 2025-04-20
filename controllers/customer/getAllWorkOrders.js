@@ -36,7 +36,8 @@ const getAllWorkOrders = async (req, res) => {
             customerEmail: customer.email,
             branchName: customer.branch ? customer.branch.name : null,
             customerId: customer._id,
-            initialRemark: order.initialRemark
+            initialRemark: order.initialRemark,
+            statusHistory: order.statusHistory || []
           };
           
           // Find the matching project
