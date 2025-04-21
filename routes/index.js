@@ -60,9 +60,9 @@ const approveWorkOrder = require('../controllers/manager/approveWorkOrder');
 const getBillDetails = require('../controllers/manager/getBillDetails');
 const getTechnicianProjects = require('../controllers/technician/getTechnicianProjects');
 const addWorkOrderRemark = require('../controllers/technician/addWorkOrderRemark');
-const acceptTransfer = require('../controllers/manager/acceptTransfer');
 const getReturnedInventory = require('../controllers/manager/getReturnedInventory');
 const confirmReturnedInventory = require('../controllers/manager/confirmReturnedInventory');
+const acceptTechnicianProjectTransfer = require('../controllers/manager/acceptTechnicianProjectTransfer');
 
 
 // Login 
@@ -97,7 +97,7 @@ router.get("/get-transfer-history", authToken, getTransferHistory);
 router.get("/get-manager-projects", authToken, getManagerProjects);
 router.post("/approve-order", authToken, approveWorkOrder);
 router.get("/get-bill-details/:id", authToken, getBillDetails);
-router.post("/accept-technician-project-transfer", authToken, acceptTransfer);
+router.post("/accept-technician-project-transfer", authToken, acceptTechnicianProjectTransfer);
 router.get("/get-returned-inventory", authToken, getReturnedInventory);
 router.post("/confirm-returned-inventory/:returnId", authToken, confirmReturnedInventory);
 

@@ -5,9 +5,9 @@ const getAllWorkOrders = async (req, res) => {
     try {
       // Filter options
       const filter = {};
-      if (req.query.status) {
-        filter['workOrders.status'] = req.query.status;
-      }
+      // if (req.query.status) {
+      //   filter['workOrders.status'] = req.query.status;
+      // }
      
       // Branch access control
       if (req.user.role !== 'admin') {
