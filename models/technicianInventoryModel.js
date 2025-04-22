@@ -34,6 +34,13 @@ const technicianInventorySchema = new mongoose.Schema({
       type: String,
       enum: ['active', 'returned', 'lost', 'used'],
       default: 'active'
+    },
+    // Add these two new fields
+    usedInWorkOrder: {
+      type: String
+    },
+    usedAt: {
+      type: Date
     }
   }],
   genericQuantity: {

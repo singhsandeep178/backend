@@ -67,6 +67,19 @@ const workOrderSchema = new mongoose.Schema({
     transactionId: String,
     paidAt: Date
   }],
+  itemsUsed: [{
+    itemId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Item'
+    },
+    serialNumber: {
+      type: String
+    },
+    usedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   instructions: {
     type: String
   },

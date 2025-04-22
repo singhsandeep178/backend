@@ -63,6 +63,11 @@ const addWorkOrderRemark = require('../controllers/technician/addWorkOrderRemark
 const getReturnedInventory = require('../controllers/manager/getReturnedInventory');
 const confirmReturnedInventory = require('../controllers/manager/confirmReturnedInventory');
 const acceptTechnicianProjectTransfer = require('../controllers/manager/acceptTechnicianProjectTransfer');
+const getSerialNumberDetails = require('../controllers/manager/getSerialNumberDetails');
+const updateSerialNumberStatus = require('../controllers/technician/updateUsedSerialNumbers');
+const registerWarrantyReplacement = require('../controllers/manager/registerWarrantyReplacement');
+const getAllWarrantyReplacements = require('../controllers/manager/getAllWarrantyReplacements');
+const completeWarrantyReplacement = require('../controllers/manager/completeWarrantyReplacement');
 
 
 // Login 
@@ -100,6 +105,10 @@ router.get("/get-bill-details/:id", authToken, getBillDetails);
 router.post("/accept-technician-project-transfer", authToken, acceptTechnicianProjectTransfer);
 router.get("/get-returned-inventory", authToken, getReturnedInventory);
 router.post("/confirm-returned-inventory/:returnId", authToken, confirmReturnedInventory);
+router.get("/serial-number-detail/:serialNumber", authToken, getSerialNumberDetails);
+router.post("/register-replacement", authToken, registerWarrantyReplacement);
+router.get("/get-replacements", authToken, getAllWarrantyReplacements);
+router.post("/complete-replacement", authToken, completeWarrantyReplacement);
 
 // Technician
 router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);
@@ -112,6 +121,7 @@ router.get("/get-work-order-details/:customerId/:orderId", authToken, getWorkOrd
 router.post("/return-inventory", authToken, returnInventoryToManager);
 router.get("/get-technician-projects/:technicianId", authToken, getTechnicianProjects);
 router.post("/remark-add", authToken, addWorkOrderRemark);
+router.post("/update-serial-status", authToken, updateSerialNumberStatus);
 
 // Lead
 router.get("/search", authToken, search);

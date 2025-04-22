@@ -32,6 +32,7 @@ const getTechnicianProjects = async (req, res) => {
             orderId: order.orderId,
             projectId: order.projectId,
             projectType: order.projectType,
+            projectCategory: order.projectCategory,
             status: order.status,
             statusHistory: order.statusHistory,
             createdAt: order.createdAt,
