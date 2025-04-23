@@ -10,9 +10,12 @@ const getBranchesController = async (req, res) => {
           success: false
         });
       }
-      
-      const branches = await Branch.find().sort('-createdAt');
-      
+     
+      // Add populate to get the user's information
+      const branches = await Branch.find()
+        .populate('createdBy', 'firstName lastName')
+        .sort('-createdAt');
+     
       res.status(200).json({
         message: 'Branches fetched successfully',
         error: false,
@@ -28,6 +31,5 @@ const getBranchesController = async (req, res) => {
       });
     }
   };
-
-
-module.exports = getBranchesController;  
+  
+module.exports = getBranchesController;

@@ -69,6 +69,7 @@ const registerWarrantyReplacement = require('../controllers/manager/registerWarr
 const getAllWarrantyReplacements = require('../controllers/manager/getAllWarrantyReplacements');
 const completeWarrantyReplacement = require('../controllers/manager/completeWarrantyReplacement');
 const getTechnicianInventoryHistory = require('../controllers/technician/getTechnicianInventoryHistory');
+const getManagerByIdController = require('../controllers/admin/getManagerByIdController');
 
 
 // Login 
@@ -89,6 +90,7 @@ router.post("/add-technicians", authToken, addTechnicianController);
 router.get("/get-branches", authToken, getBranchesController);
 router.post("/add-branches", authToken, addBranchController);
 router.post("/user-status", authToken, updateUserStatusController);
+router.get("/get-manager-detail/:managerId", authToken, getManagerByIdController);
 
 // Manager
 router.get("/manager-get-technician", authToken, getBranchTechniciansController);
