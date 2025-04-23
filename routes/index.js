@@ -68,6 +68,7 @@ const updateSerialNumberStatus = require('../controllers/technician/updateUsedSe
 const registerWarrantyReplacement = require('../controllers/manager/registerWarrantyReplacement');
 const getAllWarrantyReplacements = require('../controllers/manager/getAllWarrantyReplacements');
 const completeWarrantyReplacement = require('../controllers/manager/completeWarrantyReplacement');
+const getTechnicianInventoryHistory = require('../controllers/technician/getTechnicianInventoryHistory');
 
 
 // Login 
@@ -122,6 +123,7 @@ router.post("/return-inventory", authToken, returnInventoryToManager);
 router.get("/get-technician-projects/:technicianId", authToken, getTechnicianProjects);
 router.post("/remark-add", authToken, addWorkOrderRemark);
 router.post("/update-serial-status", authToken, updateSerialNumberStatus);
+router.get("/get-inventory-history/:technicianId", authToken, getTechnicianInventoryHistory);
 
 // Lead
 router.get("/search", authToken, search);
