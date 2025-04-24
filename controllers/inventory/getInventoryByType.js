@@ -1,8 +1,8 @@
 const Item = require('../../models/inventoryModel');
-
 const getInventoryByType = async (req, res) => {
   try {
     const { type } = req.params; // 'serialized-product', 'generic-product', or 'service'
+    const { branch } = req.query; // Optional branch parameter
      
     // Validate type
     if (!['serialized-product', 'generic-product', 'service'].includes(type)) {
@@ -20,25 +20,31 @@ const getInventoryByType = async (req, res) => {
     // Process items based on user role
     const processedItems = items.map(item => {
       const itemObj = item.toObject();
-      
+     
       // If user is manager
       if (req.userRole === 'manager') {
         // 1. Remove purchase price - managers shouldn't see this
         delete itemObj.purchasePrice;
-        
+       
         // 2. Filter stock to only show entries for manager's branch
         if (itemObj.stock && itemObj.stock.length > 0) {
           itemObj.stock = itemObj.stock.filter(
-            stockItem => stockItem.branch && 
+            stockItem => stockItem.branch &&
             stockItem.branch.toString() === req.userBranch.toString()
           );
         }
       }
-      // If user is admin, remove stock information entirely - admin only sees items, not stock
-      else if (req.userRole === 'admin') {
-        delete itemObj.stock;
+      // If user is admin AND branch parameter is provided, filter stock by branch
+      else if (req.userRole === 'admin' && branch) {
+        if (itemObj.stock && itemObj.stock.length > 0) {
+          itemObj.stock = itemObj.stock.filter(
+            stockItem => stockItem.branch &&
+            stockItem.branch.toString() === branch
+          );
+        }
       }
-      
+      // Admin without branch parameter can see all stock
+     
       return itemObj;
     });
      

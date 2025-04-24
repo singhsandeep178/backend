@@ -10,20 +10,24 @@ const getBranchTechniciansController = async (req, res) => {
         success: false
       });
     }
-    
-    // If user is manager, they can only see technicians from their branch
+   
+    // Initialize query with role: technician
     let query = { role: 'technician' };
-    
-    if (req.userRole === 'manager') {
-      // Managers can only see technicians from their branch
-      query.branch = req.userBranch; // Assuming middleware sets userBranch
+   
+    // If branch parameter is provided in the request, filter by that branch
+    if (req.query.branch) {
+      query.branch = req.query.branch;
+    }
+    // If no branch parameter but user is manager, filter by manager's branch
+    else if (req.userRole === 'manager') {
+      query.branch = req.userBranch;
     }
     
     const technicians = await User.find(query)
       .select('-password')
       .populate('branch', 'name location')
       .sort('-createdAt');
-    
+   
     res.status(200).json({
       message: 'Technicians fetched successfully',
       error: false,
