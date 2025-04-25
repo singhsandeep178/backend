@@ -70,6 +70,8 @@ const getAllWarrantyReplacements = require('../controllers/manager/getAllWarrant
 const completeWarrantyReplacement = require('../controllers/manager/completeWarrantyReplacement');
 const getTechnicianInventoryHistory = require('../controllers/technician/getTechnicianInventoryHistory');
 const getManagerByIdController = require('../controllers/admin/getManagerByIdController');
+const changePasswordController = require('../controllers/user/changePasswordController');
+const adminChangePasswordController = require('../controllers/admin/adminChangePasswordController');
 
 
 // Login 
@@ -79,6 +81,7 @@ router.post("/login", loginController);
 router.get("/get-user/:id", authToken, getUserController);
 router.post("/update-user/:id", authToken, updateUserController);
 router.delete("/delete-user/:id", authToken, deleteUserController);
+router.post("/change-password/:id", authToken, changePasswordController);
 
 // Admin
 router.get("/get-admins", authToken, getAdminUsersController);
@@ -91,6 +94,7 @@ router.get("/get-branches", authToken, getBranchesController);
 router.post("/add-branches", authToken, addBranchController);
 router.post("/user-status", authToken, updateUserStatusController);
 router.get("/get-manager-detail/:managerId", authToken, getManagerByIdController);
+router.post("/admin-change-password/:id", authToken, adminChangePasswordController);
 
 // Manager
 router.get("/manager-get-technician", authToken, getBranchTechniciansController);

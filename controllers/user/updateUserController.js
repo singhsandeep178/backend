@@ -18,24 +18,55 @@ const updateUserController = async (req, res) => {
     // Check permissions
     if (req.userRole === 'admin') {
       // Admin can update any user
+      console.log('Admin update access granted');
     } else if (req.userRole === 'manager') {
-      // Manager can only update technicians in their branch
-      if (userToUpdate.role !== 'technician') {
+      // Manager can update technicians in their branch OR themselves
+      if (userToUpdate._id.toString() === req.userId.toString()) {
+        // Manager updating themselves - allow
+        console.log('Manager updating own profile - access granted');
+        
+        // Don't allow managers to change their branch when updating themselves
+        delete updates.branch;
+      } else if (userToUpdate.role !== 'technician') {
         return res.status(403).json({
           success: false,
-          message: 'You can only update technicians'
+          message: 'You can only update technicians or your own profile'
+        });
+      } else {
+        // Manager updating a technician - check branch
+        if (!userToUpdate.branch) {
+          return res.status(403).json({
+            success: false,
+            message: 'Cannot update technician with no branch assigned'
+          });
+        }
+        
+        const technicianBranchId = userToUpdate.branch.toString();
+        const managerBranchId = req.userBranch.toString();
+        
+        if (technicianBranchId !== managerBranchId) {
+          return res.status(403).json({
+            success: false,
+            message: 'You can only update technicians from your branch'
+          });
+        }
+        
+        // Always use manager's branch when updating technicians
+        updates.branch = req.userBranch;
+      }
+    } else if (req.userRole === 'technician') {
+      // Technicians can only update themselves
+      if (userToUpdate._id.toString() !== req.userId.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied'
         });
       }
       
-      if (userToUpdate.branch.toString() !== req.userBranch.toString()) {
-        return res.status(403).json({
-          success: false,
-          message: 'You can only update technicians from your branch'
-        });
-      }
+      // Technicians can't change their branch
+      delete updates.branch;
       
-      // Always use manager's branch when updating
-      updates.branch = req.userBranch;
+      console.log('Technician self-update access granted');
     } else {
       // Other roles cannot update users
       return res.status(403).json({
