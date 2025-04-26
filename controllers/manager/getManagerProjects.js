@@ -3,60 +3,68 @@ const User = require('../../models/userModel');
 const { generateResponse } = require('../../helpers/responseGenerator');
 
 const getManagerProjects = async (req, res) => {
-    try {
-      const { userId, role } = req.user;
-      
-      // Check if user is a manager
-      if (role !== 'admin' && role !== 'manager') {
-        return res.status(403).json(generateResponse(false, 'Access denied. Only managers can access this resource.'));
-      }
-      
-      // Get branch filter if provided
-      const branchFilter = {};
-      if (req.query.branch) {
-        branchFilter['branch'] = req.query.branch;
-      } else if (role === 'manager') {
-        // For managers who don't specify a branch, get their branch
-        const manager = await User.findById(userId);
-        if (manager && manager.branch) {
-          branchFilter['branch'] = manager.branch;
+  try {
+    const userId = req.userId;
+      const role = req.userRole;
+    
+    // Check if user is a manager or admin
+    if (role !== 'admin' && role !== 'manager') {
+      return res.status(403).json(generateResponse(false, 'Access denied. Only managers can access this resource.'));
+    }
+    
+     // Get branch filter
+     let branchFilter = {};
+     if (req.query.branch) {
+       // If a specific branch is requested (usually by admin)
+       branchFilter = { branch: req.query.branch };
+     } else if (role === 'manager') {
+       // For managers, we can directly use req.userBranch from middleware
+       if (!req.userBranch) {
+         return res.status(400).json(generateResponse(false, 'Manager has no assigned branch'));
+       }
+       branchFilter = { branch: req.userBranch };
+     }
+    // For admins without branch query, no branch filter is applied
+
+    // Add status filter if provided
+    const statusFilter = {};
+    if (req.query.status) {
+      statusFilter['workOrders.status'] = req.query.status;
+    }
+    
+    // Combine filters
+    const finalFilter = { ...branchFilter, ...statusFilter };
+    
+    // Find customers with work orders
+    const customers = await Customer.find(finalFilter)
+    .populate({
+      path: 'branch',
+      model: 'Branch',
+      select: 'name'
+    })
+      .populate({
+        path: 'workOrders.technician',
+        model: 'User',
+        select: 'firstName lastName'
+      })
+      .populate({
+        path: 'workOrders.assignedBy',
+        model: 'User',
+        select: 'firstName lastName'
+      })
+      .populate({
+        path: 'workOrders.statusHistory.updatedBy',
+        model: 'User', 
+        select: 'firstName lastName'
+      })
+      .populate({
+        path: 'workOrders.bills',
+        model: 'Bill',
+        populate: {
+          path: 'items',
         }
-      }
-
-      // Add status filter if provided
-const query = {};
-if (req.query.status) {
-  query['workOrders.status'] = req.query.status;
-}
-
-// Combine branch filter with other filters
-const finalFilter = { ...branchFilter, ...query };
-      
-      // Find customers with work orders
-      const customers = await Customer.find(finalFilter)
-        .populate({
-          path: 'workOrders.technician',
-          model: 'User',
-          select: 'firstName lastName'
-        })
-        .populate({
-          path: 'workOrders.assignedBy',
-          model: 'User',
-          select: 'firstName lastName'
-        })
-        .populate({
-          path: 'workOrders.statusHistory.updatedBy',
-          model: 'User', 
-          select: 'firstName lastName'
-        })
-        .populate({
-          path: 'workOrders.bills',
-          model: 'Bill',
-          populate: {
-            path: 'items', // बिल आइटम्स को भी पॉपुलेट करें
-          }
-        })
-        .lean();
+      })
+      .lean();
       
       // Extract and format work orders
       const allProjects = [];
@@ -93,6 +101,10 @@ const finalFilter = { ...branchFilter, ...query };
               : null;
             
             allProjects.push({
+              branch: customer.branch ? {
+                _id: customer.branch._id,
+                name: customer.branch.name
+              } : null,
               customerId: customer._id,
               customerName: customer.name,
               customerPhone: customer.phoneNumber,
