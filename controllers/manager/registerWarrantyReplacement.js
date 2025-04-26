@@ -9,10 +9,11 @@ const registerWarrantyReplacement = async (req, res) => {
         customerName,
         customerPhone, 
         workOrderId, 
-        issueDescription 
+        issueDescription,
+        issueCheckedBy    
       } = req.body;
       
-      if (!serialNumber || !workOrderId || !issueDescription) {
+      if (!serialNumber || !workOrderId || !issueDescription || !issueCheckedBy) {
         return res.status(400).json({
           success: false,
           message: 'Missing required fields'
@@ -67,7 +68,11 @@ const registerWarrantyReplacement = async (req, res) => {
     customerId: customerId,
     customerName: customerName || customer?.name || 'Unknown Customer',
     originalWorkOrderId: workOrderId,
-    issueDescription,
+    issues: [{  // Add first issue to the issues array
+      issueDescription,
+      issueCheckedBy,
+      reportedAt: new Date()
+    }],
     registeredBy: req.user._id
   });
   

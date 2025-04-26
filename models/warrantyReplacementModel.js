@@ -22,10 +22,34 @@ const warrantyReplacementSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  issueDescription: {
-    type: String,
-    required: true
-  },
+  
+  // Issues array to store all issues
+  issues: [{
+    issueDescription: {
+      type: String,
+      required: true
+    },
+    issueCheckedBy: {
+      type: String,
+      required: true
+    },
+    reportedAt: {
+      type: Date,
+      default: Date.now
+    },
+    replacementSerialNumber: {
+      type: String
+    },
+    replacedAt: {
+      type: Date
+    },
+    replacedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  }],
+  
+  // Current active status
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'replaced'],
@@ -39,22 +63,6 @@ const warrantyReplacementSchema = new mongoose.Schema({
   registeredAt: {
     type: Date,
     default: Date.now
-  },
-  approvedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  approvedAt: {
-    type: Date
-  },
-  replacementSerialNumber: {
-    type: String
-  },
-  replacementWorkOrderId: {
-    type: String
-  },
-  remarks: {
-    type: String
   }
 }, { timestamps: true });
 

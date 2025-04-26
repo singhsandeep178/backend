@@ -2,9 +2,9 @@ const WarrantyReplacement = require('../../models/warrantyReplacementModel');
 
 const completeWarrantyReplacement = async (req, res) => {
     try {
-      const { replacementId, newSerialNumber, remarks } = req.body;
+      const { replacementId, newSerialNumber } = req.body;
       
-      if (!replacementId || !newSerialNumber || !remarks) {
+      if (!replacementId || !newSerialNumber) {
         return res.status(400).json({
           success: false,
           message: 'Missing required fields'
@@ -21,12 +21,19 @@ const completeWarrantyReplacement = async (req, res) => {
         });
       }
       
+     // Update the current issue with replacement information
+    const currentIssueIndex = replacement.issues.length - 1;
+    if (currentIssueIndex >= 0) {
+      replacement.issues[currentIssueIndex].replacementSerialNumber = newSerialNumber;
+      replacement.issues[currentIssueIndex].replacedAt = new Date();
+      replacement.issues[currentIssueIndex].replacedBy = req.user._id;
+    }
+
       // Update the replacement record
       replacement.status = 'replaced';
-      replacement.replacementSerialNumber = newSerialNumber;
-      replacement.remarks = remarks;
-      replacement.approvedBy = req.user._id;
-      replacement.approvedAt = new Date();
+      // replacement.replacementSerialNumber = newSerialNumber;
+      // replacement.approvedBy = req.user._id;
+      // replacement.approvedAt = new Date();
       
       await replacement.save();
       

@@ -72,6 +72,10 @@ const getTechnicianInventoryHistory = require('../controllers/technician/getTech
 const getManagerByIdController = require('../controllers/admin/getManagerByIdController');
 const changePasswordController = require('../controllers/user/changePasswordController');
 const adminChangePasswordController = require('../controllers/admin/adminChangePasswordController');
+const getReplacementHistory = require('../controllers/manager/getReplacementHistory');
+const checkWarrantyStatus = require('../controllers/manager/checkWarrantyStatus');
+const findByReplacementSerial = require('../controllers/manager/findByReplacementSerial');
+const updateWarrantyClaim = require('../controllers/manager/updateWarrantyClaim');
 
 
 // Login 
@@ -116,6 +120,10 @@ router.get("/serial-number-detail/:serialNumber", authToken, getSerialNumberDeta
 router.post("/register-replacement", authToken, registerWarrantyReplacement);
 router.get("/get-replacements", authToken, getAllWarrantyReplacements);
 router.post("/complete-replacement", authToken, completeWarrantyReplacement);
+router.get("/serial-number-history/:serialNumber", authToken, getReplacementHistory);
+router.get("/check-warranty-status/:serialNumber", authToken, checkWarrantyStatus);
+router.get("/replaced-serial-number/:serialNumber", authToken, findByReplacementSerial);
+router.post("/warranty-claim", authToken, updateWarrantyClaim);
 
 // Technician
 router.get("/technician-work-orders", authToken, getTechnicianWorkOrders);

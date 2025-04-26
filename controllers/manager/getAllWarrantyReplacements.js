@@ -10,7 +10,6 @@ const getAllWarrantyReplacements = async (req, res) => {
       const replacements = await WarrantyReplacement.find(branchFilter)
         .sort({ createdAt: -1 })
         .populate('registeredBy', 'firstName lastName')
-        .populate('approvedBy', 'firstName lastName')
         .lean();
       
       return res.status(200).json({
