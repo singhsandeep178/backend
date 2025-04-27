@@ -20,6 +20,19 @@ const getInventoryByType = async (req, res) => {
     // Process items based on user role
     const processedItems = items.map(item => {
       const itemObj = item.toObject();
+
+      // Calculate totalStock across all branches (for admin)
+  if (req.userRole === 'admin') {
+    // For serialized products, count total items
+    if (itemObj.type === 'serialized-product') {
+      itemObj.totalStock = itemObj.stock ? itemObj.stock.length : 0;
+    } 
+    // For generic products, sum up quantities
+    else if (itemObj.type === 'generic-product') {
+      itemObj.totalStock = itemObj.stock ? itemObj.stock.reduce((total, stockItem) => 
+        total + parseInt(stockItem.quantity, 10), 0) : 0;
+    }
+  }
      
       // If user is manager
       if (req.userRole === 'manager') {
