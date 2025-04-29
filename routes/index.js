@@ -76,6 +76,7 @@ const getReplacementHistory = require('../controllers/manager/getReplacementHist
 const checkWarrantyStatus = require('../controllers/manager/checkWarrantyStatus');
 const findByReplacementSerial = require('../controllers/manager/findByReplacementSerial');
 const updateWarrantyClaim = require('../controllers/manager/updateWarrantyClaim');
+const { resetSystem } = require('../controllers/user/resetSystem');
 
 
 // Login 
@@ -86,6 +87,7 @@ router.get("/get-user/:id", authToken, getUserController);
 router.post("/update-user/:id", authToken, updateUserController);
 router.delete("/delete-user/:id", authToken, deleteUserController);
 router.post("/change-password/:id", authToken, changePasswordController);
+router.post("/reset-system", authToken, resetSystem);
 
 // Admin
 router.get("/get-admins", authToken, getAdminUsersController);
