@@ -2,6 +2,7 @@ const Customer = require('../../models/customerModel');
 const TechnicianInventory = require('../../models/technicianInventoryModel');
 const Item = require('../../models/inventoryModel');
 const BillModel = require('../../models/billModel');
+const mongoose = require('mongoose');
 
 const createWorkOrderBill = async (req, res) => {
   try {
@@ -60,7 +61,29 @@ const createWorkOrderBill = async (req, res) => {
     
     // Process each item in the bill
     for (const billItem of items) {
-      // Find the item in technician's inventory - handle both _id and id properly
+      // First, check if it's a service - these don't need inventory check
+      if (billItem.type === 'service') {
+        console.log("Processing service item:", billItem.name);
+
+         // Generate a valid MongoDB ObjectId for the service
+    const serviceObjectId = new mongoose.Types.ObjectId();
+        // Services don't require inventory reduction, just add them to the bill
+        billItems.push({
+          itemId: serviceObjectId, // Use the generated ObjectId
+          name: billItem.name,
+          type: 'service',
+          quantity: billItem.quantity || 1,
+          price: billItem.price || 0,
+          amount: (billItem.price || 0) * (billItem.quantity || 1)
+        });
+        
+        totalAmount += (billItem.price || 0) * (billItem.quantity || 1);
+        
+        // Skip the rest of the loop for services
+        continue;
+      }
+    
+      // For non-service items, check inventory
       const inventoryItem = technicianInventory.find(inv => {
         // Check by ID if possible
         if (inv.item._id) {
@@ -73,7 +96,6 @@ const createWorkOrderBill = async (req, res) => {
         }
         
         // If ID doesn't match, try matching by name
-        // This is necessary because your system uses two different ID formats
         if (inv.item.name && billItem.name) {
           return inv.item.name.toLowerCase() === billItem.name.toLowerCase();
         } else if (inv.item.itemName && billItem.name) {
@@ -136,6 +158,22 @@ const createWorkOrderBill = async (req, res) => {
         });
         
         totalAmount += inventoryItem.item.salePrice || 0;
+      } // Add a check for service type items
+      if (billItem.type === 'service') {
+        // Services don't require inventory reduction, just add them to the bill
+        billItems.push({
+          itemId: billItem.itemId,
+          name: billItem.name,
+          type: 'service',
+          quantity: billItem.quantity || 1,
+          price: billItem.price || 0,
+          amount: (billItem.price || 0) * (billItem.quantity || 1)
+        });
+        
+        totalAmount += (billItem.price || 0) * (billItem.quantity || 1);
+        
+        // Skip inventory check for services
+        continue;
       } else {
         // For generic items, check if quantity is available
         if (inventoryItem.genericQuantity < billItem.quantity) {

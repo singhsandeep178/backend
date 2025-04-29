@@ -10,18 +10,18 @@ const getTechnicianInventory = async (req, res) => {
         message: 'Access denied. Only technicians can view their inventory.'
       });
     }
-    
-    // Find all inventory assigned to this technician
+   
+    // Step 1: Find all inventory assigned to this technician
     const technicianInventory = await TechnicianInventory.find({
       technician: req.userId
     }).populate('item');
-    
-    // Format the response
+   
+    // Step 2: Format the inventory items (serialized and generic products)
     const formattedInventory = technicianInventory.map(inventory => {
       const item = inventory.item;
       
       return {
-        _id: inventory._id,
+        id: inventory._id, // Fixed the syntax error
         itemId: item.id,
         itemName: item.name,
         type: item.type,
@@ -33,10 +33,32 @@ const getTechnicianInventory = async (req, res) => {
       };
     });
     
+    // Step 3: Fetch all service items (these don't need to be assigned)
+    const serviceItems = await Item.find({ type: 'service' });
+    
+    // Step 4: Format service items
+    const formattedServices = serviceItems.map(service => {
+      return {
+        id: service._id,
+        itemId: service.id,
+        itemName: service.name,
+        type: service.type,
+        salePrice: service.salePrice,
+        // Services don't have these properties but adding them for consistency
+        unit: 'N/A',
+        serializedItems: [],
+        genericQuantity: 0,
+        lastUpdated: service.updatedAt || service.createdAt
+      };
+    });
+    
+    // Step 5: Combine both arrays
+    const combinedInventory = [...formattedInventory, ...formattedServices];
+   
     res.status(200).json({
       success: true,
-      count: formattedInventory.length,
-      data: formattedInventory
+      count: combinedInventory.length,
+      data: combinedInventory
     });
   } catch (err) {
     console.error('Error fetching technician inventory:', err);
