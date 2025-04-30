@@ -1,6 +1,5 @@
 const TechnicianInventory = require('../../models/technicianInventoryModel');
 const Item = require('../../models/inventoryModel');
-
 const getTechnicianInventory = async (req, res) => {
   try {
     // Only technicians can access their inventory
@@ -11,17 +10,17 @@ const getTechnicianInventory = async (req, res) => {
       });
     }
    
-    // Step 1: Find all inventory assigned to this technician
+    // Find all inventory assigned to this technician
     const technicianInventory = await TechnicianInventory.find({
       technician: req.userId
     }).populate('item');
    
-    // Step 2: Format the inventory items (serialized and generic products)
+    // Format the response
     const formattedInventory = technicianInventory.map(inventory => {
       const item = inventory.item;
-      
+     
       return {
-        id: inventory._id, // Fixed the syntax error
+        id: inventory._id,
         itemId: item.id,
         itemName: item.name,
         type: item.type,
@@ -32,33 +31,11 @@ const getTechnicianInventory = async (req, res) => {
         lastUpdated: inventory.updatedAt || inventory.createdAt
       };
     });
-    
-    // Step 3: Fetch all service items (these don't need to be assigned)
-    const serviceItems = await Item.find({ type: 'service' });
-    
-    // Step 4: Format service items
-    const formattedServices = serviceItems.map(service => {
-      return {
-        id: service._id,
-        itemId: service.id,
-        itemName: service.name,
-        type: service.type,
-        salePrice: service.salePrice,
-        // Services don't have these properties but adding them for consistency
-        unit: 'N/A',
-        serializedItems: [],
-        genericQuantity: 0,
-        lastUpdated: service.updatedAt || service.createdAt
-      };
-    });
-    
-    // Step 5: Combine both arrays
-    const combinedInventory = [...formattedInventory, ...formattedServices];
    
     res.status(200).json({
       success: true,
-      count: combinedInventory.length,
-      data: combinedInventory
+      count: formattedInventory.length,
+      data: formattedInventory
     });
   } catch (err) {
     console.error('Error fetching technician inventory:', err);
@@ -68,5 +45,4 @@ const getTechnicianInventory = async (req, res) => {
     });
   }
 };
-
 module.exports = getTechnicianInventory;
