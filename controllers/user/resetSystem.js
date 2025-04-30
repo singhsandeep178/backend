@@ -51,8 +51,12 @@ const resetSystem = async (req, res) => {
     
     // Create default admin user
     await User.create({
+      firstName: "",
+      lastName: "",
       username: 'admin',
-      password: 'admin123', // This will be hashed by the pre-save hook
+      email: "",
+      password: 'admin123', // This will be hashed by the pre-save hook,
+      phone: "",
       role: 'admin',
       status: 'active'
     });
