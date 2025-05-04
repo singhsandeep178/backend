@@ -7,7 +7,8 @@ const router = require('./routes')
 
 const app = express()
 const allowedOrigins = [
-    'https://cms.3gdigital.net', 
+    'https://codeonwork.in',
+    'https://www.codeonwork.in', 
     process.env.FORNTEND_URL, // आपके .env से
     'http://localhost:3000' // लोकल डेवलपमेंट के लिए
   ];
