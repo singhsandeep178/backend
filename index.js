@@ -9,6 +9,7 @@ const app = express()
 const allowedOrigins = [
     'https://codeonwork.in',
     'https://www.codeonwork.in', 
+    'https://crm-based-cms-frontend.vercel.app',
     process.env.FORNTEND_URL, // आपके .env से
     'http://localhost:3000' // लोकल डेवलपमेंट के लिए
   ];
